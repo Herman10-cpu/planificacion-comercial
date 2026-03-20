@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Planificación Comercial</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Google APIs -->
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#2d333b;
+  --accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;--accent4:#d2a8ff;--accent5:#ffa657;
+  --text:#e6edf3;--text2:#8b949e;--border:#30363d;
+  --danger:#f85149;--warn:#e3b341;--success:#3fb950;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+header{background:linear-gradient(135deg,#0d1117 0%,#161b22 100%);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:0;z-index:100;}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:12px 0 8px;}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent4));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.brand-text h1{font-size:15px;font-weight:700;}
+.brand-text p{font-size:10px;color:var(--text2);}
+.header-info{display:flex;gap:16px;font-size:10px;color:var(--text2);}
+.header-info span{display:flex;align-items:center;gap:4px;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+nav{display:flex;gap:2px;overflow-x:auto;}
+.nav-btn{padding:10px 18px;border:none;background:none;color:var(--text2);cursor:pointer;font-size:12px;font-weight:500;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.nav-btn:hover{color:var(--text);background:var(--bg3);}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+main{padding:24px;max-width:1400px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.card-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+input,select,textarea{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;width:100%;outline:none;transition:border .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:80px;}
+label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.btn{padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#0d1117;}
+.btn-primary:hover{background:#79c0ff;}
+.btn-success{background:var(--success);color:#0d1117;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:5px 10px;font-size:11px;}
+.badge{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;}
+.badge-blue{background:#1f3a5f;color:var(--accent);}
+.badge-green{background:#1a3a2a;color:var(--success);}
+.badge-red{background:#3a1f1f;color:var(--danger);}
+.badge-purple{background:#2d1f3a;color:var(--accent4);}
+.badge-orange{background:#3a2a1f;color:var(--accent5);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:var(--bg3);padding:10px 12px;text-align:left;color:var(--text2);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px;}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:hover td{background:var(--bg3);}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.blue::before{background:var(--accent);}
+.kpi.green::before{background:var(--success);}
+.kpi.purple::before{background:var(--accent4);}
+.kpi.orange::before{background:var(--accent5);}
+.kpi.red::before{background:var(--danger);}
+.kpi-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;}
+.kpi-value{font-size:22px;font-weight:700;margin:4px 0;}
+.kpi-sub{font-size:10px;color:var(--text2);}
+.upload-area{border:2px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);}
+.upload-area:hover,.upload-area.drag{border-color:var(--accent);background:#1f3a5f22;}
+.result-box{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:16px;}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.result-row:last-child{border-bottom:none;}
+.result-row .val{font-weight:600;color:var(--accent);}
+.result-row.total .val{color:var(--success);font-size:16px;}
+.calc-section{border-left:3px solid var(--accent);padding-left:16px;margin-bottom:16px;}
+.calc-section h3{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-bottom:10px;}
+/* CALENDAR */
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-header{text-align:center;font-size:11px;color:var(--text2);padding:6px;font-weight:600;}
+.cal-day{min-height:72px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px;cursor:pointer;transition:all .2s;font-size:11px;}
+.cal-day:hover{border-color:var(--accent);}
+.cal-day.today{border-color:var(--accent);background:#1f3a5f33;}
+.cal-day.other-month{opacity:.4;}
+.cal-day .day-num{font-weight:600;color:var(--text2);margin-bottom:2px;}
+.cal-day.today .day-num{color:var(--accent);}
+.cal-event{border-radius:3px;padding:1px 4px;font-size:9px;margin-top:1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.cal-event.local{background:var(--accent);color:#0d1117;}
+.cal-event.gcal{background:#ea4335;color:#fff;}
+.cal-event.meeting{background:var(--accent4);color:#0d1117;}
+.cal-event.task{background:var(--success);color:#0d1117;}
+.cal-nav{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.cal-nav h2{font-size:15px;font-weight:700;flex:1;text-align:center;}
+/* PROJECTS */
+.project-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;transition:border .2s;}
+.project-card:hover{border-color:var(--accent);}
+.project-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.project-title{font-size:15px;font-weight:700;}
+.progress-bar{background:var(--bg4);border-radius:20px;height:6px;margin:8px 0;}
+.progress-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent4));transition:width .5s;}
+.ia-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.ia-tag{background:var(--bg4);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:10px;color:var(--accent4);}
+/* GCAL STATUS BOX */
+.gcal-box{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.gcal-user{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.gcal-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden;}
+.gcal-avatar img{width:100%;height:100%;border-radius:50%;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:#00000088;z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:16px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;}
+.chart-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.chart-box h3{font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px;}
+canvas{max-height:200px;}
+hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
+/* CONFIG PANEL */
+.config-banner{background:linear-gradient(135deg,#1f3a5f,#2d1f3a);border:1px solid var(--accent);border-radius:12px;padding:20px;margin-bottom:16px;}
+.config-banner h3{color:var(--accent);font-size:15px;margin-bottom:8px;}
+.config-banner p{font-size:12px;color:var(--text2);line-height:1.6;}
+.step{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;}
+.step-num{background:var(--accent);color:#0d1117;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.step-text{font-size:12px;color:var(--text2);line-height:1.5;}
+.step-text strong{color:var(--text);}
+.step-text code{background:var(--bg4);padding:1px 5px;border-radius:4px;font-family:monospace;color:var(--accent5);}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+input[type=range]{-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bg4);}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;}
+@media(max-width:600px){main{padding:12px;}.header-info{display:none;}.kpi-value{font-size:18px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-icon">📊</div>
+      <div class="brand-text">
+        <h1>Planificación Comercial</h1>
+        <p>DESARROLLO ESTRATÉGICO SAS · CUIT 30-71892294-8</p>
+      </div>
+    </div>
+    <div class="header-info">
+      <span><div class="dot"></div> Sistema activo</span>
+      <span>📍 Av. J.I. de la Roza 1946 · San Juan</span>
+      <span>🏷️ Resp. Inscripto</span>
+      <span id="clock">--:--</span>
+    </div>
+  </div>
+  <nav>
+    <button class="nav-btn active" onclick="showPage('dashboard')" id="nav-dashboard">⚡ Dashboard</button>
+    <button class="nav-btn" onclick="showPage('comprobantes')" id="nav-comprobantes">📄 Comprobantes</button>
+    <button class="nav-btn" onclick="showPage('calculadora')" id="nav-calculadora">🧮 Calculadora</button>
+    <button class="nav-btn" onclick="showPage('agenda')" id="nav-agenda">📅 Agenda</button>
+    <button class="nav-btn" onclick="showPage('proyectos')" id="nav-proyectos">🚀 Proyectos</button>
+    <button class="nav-btn" onclick="showPage('gcal-config')" id="nav-gcal-config">⚙️ Config. GCal</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="page active" id="page-dashboard">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div><h2 style="font-size:20px;font-weight:700;">Dashboard General</h2>
+    <p style="font-size:12px;color:var(--text2);">Resumen ejecutivo · Todos los módulos</p></div>
+    <span id="dash-date" style="font-size:12px;color:var(--text2);"></span>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-label">Comprobantes</div><div class="kpi-value" id="kpi-comp">0</div><div class="kpi-sub">Procesados</div></div>
+    <div class="kpi green"><div class="kpi-label">Total Facturado</div><div class="kpi-value" id="kpi-emit">$0</div><div class="kpi-sub">Emitidas</div></div>
+    <div class="kpi red"><div class="kpi-label">Total Recibido</div><div class="kpi-value" id="kpi-recv">$0</div><div class="kpi-sub">Recibidas</div></div>
+    <div class="kpi purple"><div class="kpi-label">Presupuestos</div><div class="kpi-value" id="kpi-pres">0</div><div class="kpi-sub">Generados</div></div>
+    <div class="kpi orange"><div class="kpi-label">Proyectos</div><div class="kpi-value" id="kpi-proj">0</div><div class="kpi-sub">En curso</div></div>
+    <div class="kpi blue"><div class="kpi-label">Eventos Hoy</div><div class="kpi-value" id="kpi-ev">0</div><div class="kpi-sub">Agenda del día</div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-box"><h3>📊 Comprobantes por Tipo</h3><canvas id="chart1"></canvas></div>
+    <div class="chart-box"><h3>🔖 Distribución Impuestos</h3><canvas id="chart2"></canvas></div>
+    <div class="chart-box"><h3>🚀 Avance de Proyectos</h3><canvas id="chart3"></canvas></div>
+    <div class="chart-box"><h3>📅 Próximos Eventos</h3><div id="dash-eventos" style="font-size:12px;"></div></div>
+  </div>
+  <div class="charts-grid" style="margin-top:16px;">
+    <div class="card"><div class="card-title">📄 Últimos Comprobantes</div>
+      <div class="table-wrap"><table><thead><tr><th>Tipo</th><th>CUIT</th><th>Fecha</th><th>Total</th><th>Estado</th></tr></thead>
+      <tbody id="dash-comp-body"><tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px;">Sin comprobantes</td></tr></tbody></table></div></div>
+    <div class="card"><div class="card-title">🚀 Estado de Proyectos</div><div id="dash-proj-list"><p style="font-size:12px;color:var(--text2);">Sin proyectos.</p></div></div>
+  </div>
+</div>
+
+<!-- ===== COMPROBANTES ===== -->
+<div class="page" id="page-comprobantes">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div><h2 style="font-size:20px;font-weight:700;">📄 Lector de Comprobantes</h2>
+    <p style="font-size:12px;color:var(--text2);">La IA detecta automáticamente todos los datos del comprobante</p></div>
+  </div>
+  <div class="card">
+    <div class="card-title">⬆️ Cargar Comprobante</div>
+    <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()"
+         ondragover="event.preventDefault();this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+      <div style="font-size:40px;margin-bottom:12px;">📎</div>
+      <p style="font-size:14px;font-weight:600;margin-bottom:4px;">Arrastrá o hacé clic para cargar</p>
+      <p style="font-size:12px;color:var(--text2);">PDF, JPG, PNG · La IA detectará todos los datos del comprobante</p>
+    </div>
+    <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="processFile(this)"/>
+    <div id="comp-loading" style="display:none;text-align:center;padding:20px;">
+      <div style="font-size:24px;animation:spin 1s linear infinite;display:inline-block;">⚙️</div>
+      <p style="margin-top:8px;color:var(--text2);">Analizando comprobante con IA...</p>
+    </div>
+    <div id="comp-result" style="display:none;">
+      <div class="result-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span style="font-size:13px;font-weight:700;">Datos detectados</span>
+          <span id="comp-tipo-badge"></span>
+        </div>
+        <div class="result-row"><span>Tipo de comprobante</span><span class="val" id="r-tipo">-</span></div>
+        <div class="result-row"><span>N° Comprobante / CAE</span><span class="val" id="r-cae">-</span></div>
+        <div class="result-row"><span>CUIT Emisor</span><span class="val" id="r-emisor">-</span></div>
+        <div class="result-row"><span>CUIT Receptor</span><span class="val" id="r-receptor">-</span></div>
+        <div class="result-row"><span>Fecha de Emisión</span><span class="val" id="r-fecha">-</span></div>
+        <div class="result-row"><span>Subtotal (Neto)</span><span class="val" id="r-sub">-</span></div>
+        <div class="result-row"><span>IVA</span><span class="val" id="r-iva">-</span></div>
+        <div class="result-row total"><span style="font-weight:700;">TOTAL</span><span class="val" id="r-total">-</span></div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn btn-success" onclick="saveComp()">💾 Guardar</button>
+          <button class="btn btn-outline" onclick="clearComp()">🔄 Nuevo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 Historial</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn btn-outline btn-sm" onclick="filterComp('todos')">Todos</button>
+      <button class="btn btn-outline btn-sm" onclick="filterComp('emitida')">Emitidas</button>
+      <button class="btn btn-outline btn-sm" onclick="filterComp('recibida')">Recibidas</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Estado</th><th>Tipo</th><th>N°/CAE</th><th>CUIT Contraparte</th><th>Fecha</th><th>Subtotal</th><th>IVA</th><th>Total</th><th></th></tr></thead>
+    <tbody id="comp-history"><tr><td colspan="9" style="text-align:center;color:var(--text2);padding:20px;">Sin comprobantes</td></tr></tbody></table></div>
+  </div>
+</div>
+
+<!-- ===== CALCULADORA ===== -->
+<div class="page" id="page-calculadora">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div><h2 style="font-size:20px;font-weight:700;">🧮 Calculadora de Costos</h2>
+    <p style="font-size:12px;color:var(--text2);">Nacionales · Provinciales · Municipales · Legislación vigente San Juan</p></div>
+    <button class="btn btn-primary" onclick="openModal('modal-presupuesto')">📋 Ver Presupuestos</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div>
+      <div class="card">
+        <div class="card-title">📝 Datos del Servicio</div>
+        <div class="form-group" style="margin-bottom:12px;"><label>Descripción</label><input type="text" id="calc-desc" placeholder="Ej: Consultoría estratégica"/></div>
+        <div class="form-row">
+          <div class="form-group"><label>Monto Neto Base ($)</label><input type="number" id="calc-base" placeholder="0.00" oninput="calcAll()"/></div>
+          <div class="form-group"><label>Cliente</label><input type="text" id="calc-cliente" placeholder="Nombre del cliente"/></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🇦🇷 Impuestos Nacionales</div>
+        <div class="calc-section"><h3>IVA</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Alícuota</label>
+              <select id="calc-iva" onchange="calcAll()">
+                <option value="0.21">21% (General)</option>
+                <option value="0.105">10.5% (Reducida)</option>
+                <option value="0">0% (Exento)</option>
+              </select></div>
+            <div class="form-group"><label>Monto IVA</label><input type="text" id="r-iva-calc" readonly style="background:var(--bg4);"/></div>
+          </div></div>
+        <div class="calc-section"><h3>Percepción AFIP (RG 2408)</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Alícuota</label>
+              <select id="calc-perc" onchange="calcAll()">
+                <option value="0">No aplica</option>
+                <option value="0.03">3% (Servicios)</option>
+                <option value="0.06">6% (Bs. muebles)</option>
+              </select></div>
+            <div class="form-group"><label>Monto</label><input type="text" id="r-perc-calc" readonly style="background:var(--bg4);"/></div>
+          </div></div>
+        <div class="calc-section"><h3>Retención Ganancias</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Alícuota</label>
+              <select id="calc-gan" onchange="calcAll()">
+                <option value="0">No aplica</option>
+                <option value="0.02">2% (Serv. empresas)</option>
+                <option value="0.028">2.8% (Honorarios)</option>
+                <option value="0.035">3.5% (Alquileres)</option>
+              </select></div>
+            <div class="form-group"><label>Monto</label><input type="text" id="r-gan-calc" readonly style="background:var(--bg4);"/></div>
+          </div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏔️ Provinciales — San Juan</div>
+        <div class="calc-section"><h3>Ingresos Brutos SJ</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Actividad</label>
+              <select id="calc-iibb" onchange="calcAll()">
+                <option value="0.035">3.5% — Servicios empresariales</option>
+                <option value="0.03">3.0% — Servicios profesionales</option>
+                <option value="0.02">2.0% — Comercio minorista</option>
+                <option value="0.015">1.5% — Comercio mayorista</option>
+                <option value="0.01">1.0% — Industria</option>
+                <option value="0.05">5.0% — Intermediación financiera</option>
+              </select></div>
+            <div class="form-group"><label>Monto IIBB</label><input type="text" id="r-iibb-calc" readonly style="background:var(--bg4);"/></div>
+          </div></div>
+        <div class="calc-section"><h3>Imp. Sellos / Aforo de Contratos</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Alícuota</label>
+              <select id="calc-sellos" onchange="calcAll()">
+                <option value="0">No aplica</option>
+                <option value="0.01">1% (Alícuota general — contratos onerosos)</option>
+                <option value="0.003">0.3% (Constitución sociedades)</option>
+              </select></div>
+            <div class="form-group"><label>Monto Sellos</label><input type="text" id="r-sellos-calc" readonly style="background:var(--bg4);"/></div>
+          </div>
+          <p style="font-size:10px;color:var(--text2);margin-top:4px;">+ 20% adicional Acción Social sobre Sellos (Ley Imp. SJ Art. 6°)</p>
+          <div class="form-group" style="margin-top:6px;"><label>Adicional Acción Social</label><input type="text" id="r-accionsoc" readonly style="background:var(--bg4);"/></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏙️ Municipal — San Juan</div>
+        <div class="calc-section"><h3>Tasa Comercio e Industria</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Alícuota</label>
+              <select id="calc-muni" onchange="calcAll()">
+                <option value="0">No aplica</option>
+                <option value="0.005">0.5% — Servicios</option>
+                <option value="0.004">0.4% — Comercio</option>
+                <option value="0.003">0.3% — Industria</option>
+              </select></div>
+            <div class="form-group"><label>Monto Municipal</label><input type="text" id="r-muni-calc" readonly style="background:var(--bg4);"/></div>
+          </div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="position:sticky;top:80px;">
+        <div class="card-title">💰 Resumen del Presupuesto</div>
+        <div class="result-box">
+          <div class="result-row"><span>Neto base</span><span class="val" id="rr-base">$0.00</span></div>
+          <hr/>
+          <div style="font-size:11px;color:var(--text2);margin:4px 0;font-weight:600;">NACIONALES</div>
+          <div class="result-row"><span>IVA</span><span class="val" id="rr-iva">$0.00</span></div>
+          <div class="result-row"><span>Percepción AFIP</span><span class="val" id="rr-perc">$0.00</span></div>
+          <div class="result-row"><span>Retención Ganancias</span><span class="val" id="rr-gan">$0.00</span></div>
+          <hr/>
+          <div style="font-size:11px;color:var(--text2);margin:4px 0;font-weight:600;">PROVINCIALES</div>
+          <div class="result-row"><span>Ingresos Brutos SJ</span><span class="val" id="rr-iibb">$0.00</span></div>
+          <div class="result-row"><span>Imp. Sellos</span><span class="val" id="rr-sellos">$0.00</span></div>
+          <div class="result-row"><span>Adic. Acción Social</span><span class="val" id="rr-as">$0.00</span></div>
+          <hr/>
+          <div style="font-size:11px;color:var(--text2);margin:4px 0;font-weight:600;">MUNICIPAL</div>
+          <div class="result-row"><span>Tasa Comercio e Ind.</span><span class="val" id="rr-muni">$0.00</span></div>
+          <hr/>
+          <div class="result-row"><span>Total Impuestos</span><span class="val" id="rr-impuestos" style="color:var(--warn);">$0.00</span></div>
+          <div class="result-row total"><span style="font-weight:700;font-size:14px;">TOTAL PRESUPUESTO</span><span class="val" id="rr-total">$0.00</span></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-success" onclick="savePresupuesto()">💾 Guardar</button>
+          <button class="btn btn-outline" onclick="clearCalc()">🔄 Limpiar</button>
+        </div>
+        <div style="margin-top:12px;"><div class="card-title" style="margin-bottom:8px;">📊 Distribución</div><canvas id="chart-calc" style="max-height:160px;"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AGENDA ===== -->
+<div class="page" id="page-agenda">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div><h2 style="font-size:20px;font-weight:700;">📅 Agenda</h2>
+    <p style="font-size:12px;color:var(--text2);" id="gcal-sync-status">Google Calendar: <span style="color:var(--text2);">no conectado</span></p></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline btn-sm" id="btn-gcal-sync" onclick="gcalSync()" style="display:none;">🔄 Sincronizar</button>
+      <button class="btn btn-outline" id="btn-gcal-connect" onclick="gcalSignIn()">📆 Conectar Google Calendar</button>
+      <button class="btn btn-primary" onclick="openModal('modal-evento')">+ Nuevo Evento</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;">
+    <div class="card">
+      <div class="cal-nav">
+        <button class="btn btn-outline btn-sm" onclick="prevMonth()">‹</button>
+        <h2 id="cal-month-label">-</h2>
+        <button class="btn btn-outline btn-sm" onclick="nextMonth()">›</button>
+        <button class="btn btn-outline btn-sm" onclick="goToday()">Hoy</button>
+      </div>
+      <div class="calendar-grid">
+        <div class="cal-header">Dom</div><div class="cal-header">Lun</div><div class="cal-header">Mar</div>
+        <div class="cal-header">Mié</div><div class="cal-header">Jue</div><div class="cal-header">Vie</div><div class="cal-header">Sáb</div>
+      </div>
+      <div class="calendar-grid" id="cal-grid"></div>
+      <div style="display:flex;gap:12px;margin-top:8px;font-size:10px;color:var(--text2);flex-wrap:wrap;">
+        <span><span style="background:var(--accent);color:#000;border-radius:3px;padding:1px 6px;">█</span> Evento local</span>
+        <span><span style="background:#ea4335;color:#fff;border-radius:3px;padding:1px 6px;">█</span> Google Cal</span>
+        <span><span style="background:var(--accent4);color:#000;border-radius:3px;padding:1px 6px;">█</span> Reunión</span>
+        <span><span style="background:var(--success);color:#000;border-radius:3px;padding:1px 6px;">█</span> Tarea</span>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">📋 Eventos del mes</div>
+        <div id="event-list" style="font-size:12px;max-height:300px;overflow-y:auto;"></div>
+      </div>
+      <div class="gcal-box" id="gcal-info-box">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Conectá tu cuenta de Google para sincronizar eventos automáticamente.</p>
+        <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="gcalSignIn()">
+          <svg width="14" height="14" viewBox="0 0 48 48" style="margin-right:4px;"><path fill="#EA4335" d="M24 9.5c3.5 0 6.3 1.2 8.4 3.2l6.3-6.3C34.7 2.8 29.7.5 24 .5 14.8.5 7 6.3 3.7 14.3l7.4 5.7C12.9 13.1 17.9 9.5 24 9.5z"/><path fill="#4A90D9" d="M46.1 24.6c0-1.7-.2-3.3-.4-4.8H24v9h12.4c-.5 2.8-2.1 5.1-4.5 6.7l7 5.4c4.1-3.8 6.5-9.4 6.5-16.1-.1-.8-.1-1.4-.3-1.8z" opacity=".9"/><path fill="#FBBC05" d="M11.1 28.8c-.4-1.2-.6-2.5-.6-3.8s.2-2.6.6-3.8L3.7 15.5C2.2 18.3 1.3 21.5 1.3 25s.9 6.7 2.4 9.5l7.4-5.7z"/><path fill="#34A853" d="M24 48.5c5.7 0 10.5-1.9 14-5.1l-7-5.4c-1.9 1.3-4.4 2-7 2-6.1 0-11.1-3.6-13-9.2l-7.4 5.7C7 42.7 14.8 48.5 24 48.5z"/></svg>
+          Iniciar sesión con Google
+        </button>
+      </div>
+      <div class="gcal-box" id="gcal-user-box" style="display:none;">
+        <div class="gcal-user">
+          <div class="gcal-avatar" id="gcal-avatar">G</div>
+          <div><div id="gcal-name" style="font-size:13px;font-weight:600;"></div><div id="gcal-email" style="font-size:10px;color:var(--text2);"></div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="gcalSync()">🔄 Sincronizar</button>
+          <button class="btn btn-danger btn-sm" onclick="gcalSignOut()">Desconectar</button>
+        </div>
+        <div id="gcal-last-sync" style="font-size:10px;color:var(--text2);margin-top:6px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROYECTOS ===== -->
+<div class="page" id="page-proyectos">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div><h2 style="font-size:20px;font-weight:700;">🚀 Proyectos</h2>
+    <p style="font-size:12px;color:var(--text2);">Gestión de proyectos activos</p></div>
+    <button class="btn btn-primary" onclick="openModal('modal-proyecto')">+ Nuevo Proyecto</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <button class="btn btn-outline btn-sm" onclick="filterProj('todos')">Todos</button>
+    <button class="btn btn-outline btn-sm" onclick="filterProj('En curso')">En curso</button>
+    <button class="btn btn-outline btn-sm" onclick="filterProj('Completado')">Completados</button>
+    <button class="btn btn-outline btn-sm" onclick="filterProj('Pausa')">En pausa</button>
+  </div>
+  <div id="proj-list"></div>
+</div>
+
+<!-- ===== CONFIG GCAL ===== -->
+<div class="page" id="page-gcal-config">
+  <div style="margin-bottom:20px;">
+    <h2 style="font-size:20px;font-weight:700;">⚙️ Configuración Google Calendar</h2>
+    <p style="font-size:12px;color:var(--text2);">Seguí estos 3 pasos para activar la integración real</p>
+  </div>
+
+  <div class="config-banner">
+    <h3>🔑 Para activar la integración real necesitás tu Client ID de Google</h3>
+    <p>Esta app usa la API oficial de Google Calendar. Para conectarla necesitás crear un proyecto en Google Cloud Console (gratis, 5 minutos).</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Pasos de Configuración</div>
+    <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Ir a Google Cloud Console</strong><br/>Entrá a <a href="https://console.cloud.google.com" target="_blank" style="color:var(--accent);">console.cloud.google.com</a> e iniciá sesión con tu cuenta Google de empresa. Creá un nuevo proyecto llamado <code>Planificacion-Comercial</code>.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Activar la API de Google Calendar</strong><br/>En el menú izquierdo andá a <code>APIs y servicios → Biblioteca</code>, buscá <strong>Google Calendar API</strong> y hacé clic en <strong>Habilitar</strong>.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Crear credenciales OAuth2</strong><br/>Andá a <code>APIs y servicios → Credenciales → Crear credencial → ID de cliente OAuth</code>. Elegí tipo <strong>Aplicación web</strong>. En <strong>Orígenes autorizados</strong> ingresá la URL donde corrés esta app (ej: <code>https://claude.ai</code> o tu dominio). Copiá el <strong>Client ID</strong> generado.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Configurar pantalla de consentimiento</strong><br/>En <code>APIs y servicios → Pantalla de consentimiento OAuth</code>, completá nombre de la app (<code>Planificación Comercial</code>), correo de soporte, y agregá el scope <code>https://www.googleapis.com/auth/calendar.events</code>.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Pegá tu Client ID acá abajo y guardá</strong></div></div>
+
+    <hr/>
+    <div class="form-row">
+      <div class="form-group" style="grid-column:1/-1;">
+        <label>Tu Google Client ID</label>
+        <input type="text" id="gcal-client-id-input" placeholder="xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-primary" onclick="saveClientId()">💾 Guardar Client ID y Activar</button>
+      <button class="btn btn-outline" onclick="clearClientId()">🗑️ Borrar</button>
+    </div>
+    <div id="clientid-status" style="margin-top:10px;font-size:12px;"></div>
+  </div>
+
+  <div class="card" id="gcal-test-card" style="display:none;">
+    <div class="card-title">✅ Conexión Activa</div>
+    <div id="gcal-config-status" style="font-size:13px;"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="gcalSignIn();showPage('agenda')">📅 Ir a Agenda y Conectar</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-evento">
+  <div class="modal">
+    <h2>📅 <span id="modal-evento-title">Nuevo Evento</span></h2>
+    <input type="hidden" id="evt-id"/>
+    <div class="form-group" style="margin-bottom:10px;"><label>Título *</label><input type="text" id="evt-titulo" placeholder="Reunión con cliente..."/></div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha *</label><input type="date" id="evt-fecha"/></div>
+      <div class="form-group"><label>Hora</label><input type="time" id="evt-hora"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Duración (minutos)</label><input type="number" id="evt-dur" placeholder="60" value="60"/></div>
+      <div class="form-group"><label>Tipo</label>
+        <select id="evt-tipo">
+          <option value="evento">Evento</option>
+          <option value="meeting">Reunión</option>
+          <option value="task">Tarea</option>
+        </select></div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px;"><label>Vinculado a proyecto</label>
+      <select id="evt-proyecto"><option value="">Sin vincular</option></select></div>
+    <div class="form-group" style="margin-bottom:10px;"><label>Descripción</label><textarea id="evt-desc" placeholder="Detalle..."></textarea></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <input type="checkbox" id="evt-gcal-sync" style="width:auto;" checked/>
+      <label style="margin:0;">Sincronizar con Google Calendar</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-evento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEvento()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-proyecto">
+  <div class="modal">
+    <h2>🚀 <span id="modal-proj-title">Nuevo Proyecto</span></h2>
+    <input type="hidden" id="proj-id-edit"/>
+    <div class="form-row">
+      <div class="form-group"><label>Nombre *</label><input type="text" id="proj-nombre"/></div>
+      <div class="form-group"><label>Responsable</label>
+        <select id="proj-responsable">
+          <option>Dirección General</option><option>Área Comercial</option>
+          <option>Área Contable</option><option>Área Técnica</option>
+          <option>Área Marketing</option><option>Consultoría Externa</option>
+        </select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha de Inicio</label><input type="date" id="proj-fecha"/></div>
+      <div class="form-group"><label>Estado</label>
+        <select id="proj-estado">
+          <option>En curso</option><option>Pausa</option><option>Completado</option><option>Planificación</option>
+        </select></div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px;"><label>Descripción</label><textarea id="proj-desc"></textarea></div>
+    <div class="form-group" style="margin-bottom:10px;"><label>Link del Proyecto</label><input type="url" id="proj-link" placeholder="https://..."/></div>
+    <div class="form-group" style="margin-bottom:10px;"><label>IAs de soporte (separadas por coma)</label><input type="text" id="proj-ias" placeholder="Claude, ChatGPT, Gemini..."/></div>
+    <div class="form-group" style="margin-bottom:10px;">
+      <label>Avance: <span id="proj-avance-val">0</span>%</label>
+      <input type="range" id="proj-avance" min="0" max="100" value="0" oninput="document.getElementById('proj-avance-val').textContent=this.value" style="width:100%;"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-proyecto')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProyecto()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-presupuesto">
+  <div class="modal" style="max-width:700px;">
+    <h2>📋 Historial de Presupuestos</h2>
+    <div class="table-wrap" style="margin-top:12px;">
+      <table><thead><tr><th>Descripción</th><th>Cliente</th><th>Neto</th><th>Total</th><th>Fecha</th></tr></thead>
+      <tbody id="pres-body"><tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px;">Sin presupuestos</td></tr></tbody></table>
+    </div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal('modal-presupuesto')">Cerrar</button></div>
+  </div>
+</div>
+
+<script>
+// ===========================
+// STATE
+// ===========================
+const CUIT_EMPRESA = '30718922948';
+let state = {
+  comprobantes:[], presupuestos:[], eventos:[], proyectos:[],
+  currentComp:null, calcChart:null,
+  calYear:new Date().getFullYear(), calMonth:new Date().getMonth(),
+  gcal:{ connected:false, token:null, tokenClient:null, gapiInited:false, gisInited:false, clientId:'' }
+};
+
+// ===========================
+// CLOCK & INIT
+// ===========================
+setInterval(()=>{
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+},1000);
+document.getElementById('dash-date').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// ===========================
+// NAV
+// ===========================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  if(id==='dashboard') updateDashboard();
+  if(id==='agenda') renderCalendar();
+  if(id==='proyectos') renderProjects();
+  if(id==='gcal-config') loadConfigPage();
+}
+
+// ===========================
+// GOOGLE CALENDAR OAUTH2
+// ===========================
+const GCAL_SCOPES = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
+const GCAL_DISCOVERY = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+
+// Called when gapi.js loads
+window.gapiLoaded = function(){
+  gapi.load('client', async()=>{
+    state.gcal.gapiInited = true;
+    const cid = getSavedClientId();
+    if(cid){ await initGapiClient(cid); }
+  });
+};
+
+// Called when GIS (accounts.google.com/gsi/client) loads
+window.gisLoaded = function(){
+  state.gcal.gisInited = true;
+  const cid = getSavedClientId();
+  if(cid) initTokenClient(cid);
+};
+
+async function initGapiClient(clientId){
+  try {
+    await gapi.client.init({ apiKey:'', discoveryDocs:[GCAL_DISCOVERY] });
+  } catch(e){ console.warn('gapi init:', e); }
+}
+
+function initTokenClient(clientId){
+  if(!window.google || !google.accounts) return;
+  state.gcal.tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: GCAL_SCOPES,
+    callback: async (resp)=>{
+      if(resp.error){ alert('Error de autorización: '+resp.error); return; }
+      state.gcal.token = resp.access_token;
+      state.gcal.connected = true;
+      await fetchUserInfo();
+      await gcalSync();
+    }
+  });
+}
+
+function getSavedClientId(){
+  try{ return sessionStorage.getItem('gcal_client_id') || ''; }catch{ return ''; }
+}
+
+function saveClientId(){
+  const cid = document.getElementById('gcal-client-id-input').value.trim();
+  if(!cid || !cid.includes('.apps.googleusercontent.com')){
+    document.getElementById('clientid-status').innerHTML='<span style="color:var(--danger);">❌ Client ID inválido. Debe terminar en .apps.googleusercontent.com</span>';
+    return;
+  }
+  try{ sessionStorage.setItem('gcal_client_id', cid); }catch{}
+  state.gcal.clientId = cid;
+  document.getElementById('clientid-status').innerHTML='<span style="color:var(--success);">✅ Client ID guardado. Ahora podés conectar tu cuenta.</span>';
+  document.getElementById('gcal-test-card').style.display='block';
+  document.getElementById('gcal-config-status').innerHTML=`Client ID configurado: <code style="color:var(--accent5);font-size:11px;">${cid.substring(0,30)}...</code>`;
+  if(state.gcal.gapiInited) initGapiClient(cid);
+  if(state.gcal.gisInited) initTokenClient(cid);
+}
+
+function clearClientId(){
+  try{ sessionStorage.removeItem('gcal_client_id'); }catch{}
+  document.getElementById('gcal-client-id-input').value='';
+  document.getElementById('clientid-status').innerHTML='';
+  document.getElementById('gcal-test-card').style.display='none';
+}
+
+function loadConfigPage(){
+  const saved = getSavedClientId();
+  if(saved){
+    document.getElementById('gcal-client-id-input').value = saved;
+    document.getElementById('gcal-test-card').style.display='block';
+    document.getElementById('gcal-config-status').innerHTML=`Client ID configurado: <code style="color:var(--accent5);font-size:11px;">${saved.substring(0,30)}...</code>`;
+    document.getElementById('clientid-status').innerHTML='<span style="color:var(--success);">✅ Client ID activo</span>';
+  }
+}
+
+function gcalSignIn(){
+  const cid = getSavedClientId();
+  if(!cid){
+    alert('Primero configurá tu Client ID en la pestaña ⚙️ Config. GCal');
+    showPage('gcal-config'); return;
+  }
+  if(!state.gcal.tokenClient){ initTokenClient(cid); }
+  if(!state.gcal.tokenClient){ alert('La librería de Google aún se está cargando. Intentá de nuevo en unos segundos.'); return; }
+  state.gcal.tokenClient.requestAccessToken({prompt:''});
+}
+
+function gcalSignOut(){
+  if(state.gcal.token) google.accounts.oauth2.revoke(state.gcal.token, ()=>{});
+  state.gcal.token = null;
+  state.gcal.connected = false;
+  // Remove gcal events from local state
+  state.eventos = state.eventos.filter(e=>!e.gcal);
+  updateGcalUI(false);
+  renderCalendar();
+}
+
+async function fetchUserInfo(){
+  if(!state.gcal.token) return;
+  try {
+    const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+state.gcal.token}});
+    const u = await r.json();
+    document.getElementById('gcal-name').textContent = u.name || 'Usuario Google';
+    document.getElementById('gcal-email').textContent = u.email || '';
+    if(u.picture){ document.getElementById('gcal-avatar').innerHTML=`<img src="${u.picture}" alt="avatar"/>`; }
+    else { document.getElementById('gcal-avatar').textContent = (u.name||'G')[0].toUpperCase(); }
+    updateGcalUI(true);
+  } catch(e){ console.warn('userinfo:', e); updateGcalUI(true); }
+}
+
+function updateGcalUI(connected){
+  document.getElementById('gcal-info-box').style.display = connected?'none':'block';
+  document.getElementById('gcal-user-box').style.display = connected?'block':'none';
+  document.getElementById('btn-gcal-connect').style.display = connected?'none':'';
+  document.getElementById('btn-gcal-sync').style.display = connected?'':'none';
+  const statusEl = document.getElementById('gcal-sync-status');
+  statusEl.innerHTML = connected
+    ? 'Google Calendar: <span style="color:var(--success);">✅ conectado</span>'
+    : 'Google Calendar: <span style="color:var(--text2);">no conectado</span>';
+}
+
+async function gcalSync(){
+  if(!state.gcal.token){ gcalSignIn(); return; }
+  try {
+    const now = new Date();
+    const tMin = new Date(now.getFullYear(), now.getMonth()-1, 1).toISOString();
+    const tMax = new Date(now.getFullYear(), now.getMonth()+3, 0).toISOString();
+    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${tMin}&timeMax=${tMax}&maxResults=100&singleEvents=true&orderBy=startTime`;
+    const r = await fetch(url,{headers:{Authorization:'Bearer '+state.gcal.token}});
+    if(!r.ok){ throw new Error('HTTP '+r.status); }
+    const data = await r.json();
+    // Remove previous gcal events
+    state.eventos = state.eventos.filter(e=>!e.gcal);
+    // Add fetched events
+    (data.items||[]).forEach(item=>{
+      const start = item.start?.dateTime || item.start?.date || '';
+      const fecha = start ? start.substring(0,10) : '';
+      const hora = start && start.includes('T') ? start.substring(11,16) : '';
+      state.eventos.push({
+        id: item.id, titulo: item.summary||'(Sin título)',
+        fecha, hora, tipo:'meeting', desc: item.description||'',
+        gcal:true, gcal_id: item.id, proyecto:''
+      });
+    });
+    document.getElementById('gcal-last-sync').textContent = '🕐 Última sync: '+new Date().toLocaleTimeString('es-AR');
+    renderCalendar();
+    updateDashboard();
+    alert(`✅ Sincronizado: ${(data.items||[]).length} eventos importados de Google Calendar.`);
+  } catch(e){
+    alert('Error al sincronizar: '+e.message+'\n\nVerificá que tu Client ID tenga el dominio autorizado.');
+  }
+}
+
+async function createGcalEvent(ev){
+  if(!state.gcal.token) return;
+  const startDT = ev.hora ? `${ev.fecha}T${ev.hora}:00` : ev.fecha;
+  const endDT = ev.hora ? `${ev.fecha}T${addMinutes(ev.hora, parseInt(ev.dur)||60)}:00` : ev.fecha;
+  const body = {
+    summary: ev.titulo,
+    description: ev.desc || (ev.proyecto?'Proyecto: '+ev.proyecto:''),
+    start: ev.hora ? {dateTime: startDT, timeZone:'America/Argentina/San_Juan'} : {date: ev.fecha},
+    end:   ev.hora ? {dateTime: endDT,   timeZone:'America/Argentina/San_Juan'} : {date: ev.fecha},
+  };
+  try {
+    const r = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
+      method:'POST', headers:{Authorization:'Bearer '+state.gcal.token,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(r.ok){ const d=await r.json(); return d.id; }
+  } catch(e){ console.warn('createGcalEvent:', e); }
+}
+
+async function deleteGcalEvent(gcalId){
+  if(!state.gcal.token || !gcalId) return;
+  try {
+    await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${gcalId}`,{
+      method:'DELETE', headers:{Authorization:'Bearer '+state.gcal.token}
+    });
+  } catch(e){ console.warn('deleteGcalEvent:', e); }
+}
+
+function addMinutes(timeStr, mins){
+  const [h,m] = timeStr.split(':').map(Number);
+  const total = h*60+m+mins;
+  return String(Math.floor(total/60)%24).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
+}
+
+// Load gapi & gis
+(function(){
+  const s1=document.createElement('script'); s1.src='https://apis.google.com/js/api.js';
+  s1.onload=()=>gapiLoaded(); document.head.appendChild(s1);
+  const s2=document.createElement('script'); s2.src='https://accounts.google.com/gsi/client';
+  s2.onload=()=>gisLoaded(); document.head.appendChild(s2);
+})();
+
+// ===========================
+// COMPROBANTES
+// ===========================
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-area').classList.remove('drag');
+  const f=e.dataTransfer.files[0]; if(f) processFile({files:[f]});
+}
+
+function processFile(inp){
+  const f=inp.files[0]; if(!f) return;
+  document.getElementById('comp-loading').style.display='block';
+  document.getElementById('comp-result').style.display='none';
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    const b64=e.target.result.split(',')[1];
+    try {
+      let msgs;
+      if(f.type.startsWith('image/')){
+        msgs=[{role:'user',content:[{type:'image',source:{type:'base64',media_type:f.type,data:b64}},
+          {type:'text',text:`Analizá esta factura argentina. Respondé SOLO con JSON sin backticks: {"tipo_comprobante":"","numero":"","cae":"","cuit_emisor":"solo digitos","cuit_receptor":"solo digitos","fecha_emision":"DD/MM/AAAA","subtotal":0,"iva":0,"total":0}`}]}];
+      } else {
+        msgs=[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
+          {type:'text',text:`Analizá esta factura argentina. Respondé SOLO con JSON sin backticks: {"tipo_comprobante":"","numero":"","cae":"","cuit_emisor":"solo digitos","cuit_receptor":"solo digitos","fecha_emision":"DD/MM/AAAA","subtotal":0,"iva":0,"total":0}`}]}];
+      }
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:msgs})});
+      const data=await res.json();
+      const txt=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+      let d; try{d=JSON.parse(txt);}catch{d=extractFallback(txt);}
+      showCompResult(d);
+    } catch(err){ alert('Error: '+err.message); }
+    finally{ document.getElementById('comp-loading').style.display='none'; }
+  };
+  reader.readAsDataURL(f);
+}
+
+function extractFallback(txt){
+  const get=k=>{ const m=txt.match(new RegExp('"'+k+'"\\s*:\\s*"?([^",}]+)"?')); return m?m[1].trim():''; };
+  return{tipo_comprobante:get('tipo_comprobante'),numero:get('numero'),cae:get('cae'),cuit_emisor:get('cuit_emisor'),
+    cuit_receptor:get('cuit_receptor'),fecha_emision:get('fecha_emision'),subtotal:parseFloat(get('subtotal'))||0,
+    iva:parseFloat(get('iva'))||0,total:parseFloat(get('total'))||0};
+}
+
+function showCompResult(d){
+  const emitida=d.cuit_emisor&&d.cuit_emisor.replace(/\D/g,'')=== CUIT_EMPRESA;
+  const tipo=emitida?'EMITIDA':'RECIBIDA';
+  const badge=document.getElementById('comp-tipo-badge');
+  badge.textContent=tipo; badge.className='badge '+(emitida?'badge-green':'badge-red');
+  document.getElementById('r-tipo').textContent=d.tipo_comprobante||'No detectado';
+  document.getElementById('r-cae').textContent=(d.numero||'-')+(d.cae?' | CAE: '+d.cae:'');
+  document.getElementById('r-emisor').textContent=d.cuit_emisor||'-';
+  document.getElementById('r-receptor').textContent=d.cuit_receptor||'-';
+  document.getElementById('r-fecha').textContent=d.fecha_emision||'-';
+  document.getElementById('r-sub').textContent='$'+(d.subtotal||0).toFixed(2);
+  document.getElementById('r-iva').textContent='$'+(d.iva||0).toFixed(2);
+  document.getElementById('r-total').textContent='$'+(d.total||0).toFixed(2);
+  state.currentComp={...d,tipo_dir:tipo};
+  document.getElementById('comp-result').style.display='block';
+}
+
+function saveComp(){ if(!state.currentComp)return; state.comprobantes.unshift({...state.currentComp,id:Date.now()}); renderCompHistory(); updateDashboard(); clearComp(); }
+function clearComp(){ state.currentComp=null; document.getElementById('comp-result').style.display='none'; document.getElementById('file-input').value=''; }
+function filterComp(f){ renderCompHistory(f); }
+function delComp(id){ state.comprobantes=state.comprobantes.filter(c=>c.id!==id); renderCompHistory(); updateDashboard(); }
+
+function renderCompHistory(filter='todos'){
+  const tbody=document.getElementById('comp-history');
+  let list=state.comprobantes;
+  if(filter!=='todos') list=list.filter(c=>c.tipo_dir===filter.toUpperCase());
+  if(!list.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text2);padding:20px;">Sin comprobantes</td></tr>';return;}
+  tbody.innerHTML=list.map(c=>`<tr>
+    <td><span class="badge ${c.tipo_dir==='EMITIDA'?'badge-green':'badge-red'}">${c.tipo_dir}</span></td>
+    <td>${c.tipo_comprobante||'-'}</td><td style="font-size:10px;">${c.numero||'-'}</td>
+    <td style="font-size:10px;">${c.tipo_dir==='EMITIDA'?c.cuit_receptor:c.cuit_emisor||'-'}</td>
+    <td>${c.fecha_emision||'-'}</td><td>$${(c.subtotal||0).toFixed(2)}</td>
+    <td>$${(c.iva||0).toFixed(2)}</td><td style="font-weight:700;">$${(c.total||0).toFixed(2)}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="delComp(${c.id})">🗑️</button></td></tr>`).join('');
+}
+
+// ===========================
+// CALCULADORA
+// ===========================
+let calcChartInst=null;
+function calcAll(){
+  const base=parseFloat(document.getElementById('calc-base').value)||0;
+  const iva=base*parseFloat(document.getElementById('calc-iva').value);
+  const perc=base*parseFloat(document.getElementById('calc-perc').value);
+  const gan=base*parseFloat(document.getElementById('calc-gan').value);
+  const iibb=base*parseFloat(document.getElementById('calc-iibb').value);
+  const sellosRate=parseFloat(document.getElementById('calc-sellos').value);
+  const sellos=base*sellosRate, accSoc=sellos*0.20;
+  const muni=base*parseFloat(document.getElementById('calc-muni').value);
+  const totalImp=iva+perc+gan+iibb+sellos+accSoc+muni;
+  const total=base+totalImp;
+  const fmt=v=>'$'+v.toFixed(2);
+  ['iva','perc','gan','iibb','sellos'].forEach(k=>document.getElementById('r-'+k+'-calc').value=fmt(eval(k)));
+  document.getElementById('r-accionsoc').value=fmt(accSoc);
+  document.getElementById('r-muni-calc').value=fmt(muni);
+  ['base','iva','perc','gan','iibb'].forEach(k=>document.getElementById('rr-'+k).textContent=fmt(eval(k)));
+  document.getElementById('rr-sellos').textContent=fmt(sellos);
+  document.getElementById('rr-as').textContent=fmt(accSoc);
+  document.getElementById('rr-muni').textContent=fmt(muni);
+  document.getElementById('rr-impuestos').textContent=fmt(totalImp);
+  document.getElementById('rr-total').textContent=fmt(total);
+  const ctx=document.getElementById('chart-calc');
+  if(calcChartInst) calcChartInst.destroy();
+  calcChartInst=new Chart(ctx,{type:'doughnut',data:{
+    labels:['Neto','IVA','Perc.AFIP','Ret.Gan.','IIBB','Sellos+AS','Municipal'],
+    datasets:[{data:[base,iva,perc,gan,iibb,sellos+accSoc,muni],
+      backgroundColor:['#21262d','#58a6ff','#d2a8ff','#ffa657','#3fb950','#f78166','#e3b341'],borderWidth:0}]
+  },options:{plugins:{legend:{labels:{color:'#8b949e',font:{size:10}},position:'bottom'}},cutout:'65%'}});
+}
+
+function clearCalc(){ ['calc-base','calc-cliente','calc-desc'].forEach(id=>document.getElementById(id).value=''); calcAll(); }
+
+function savePresupuesto(){
+  const base=parseFloat(document.getElementById('calc-base').value)||0;
+  if(!base){alert('Ingresá un monto base.');return;}
+  const total=parseFloat(document.getElementById('rr-total').textContent.replace('$',''));
+  state.presupuestos.unshift({id:Date.now(),desc:document.getElementById('calc-desc').value||'Sin descripción',
+    cliente:document.getElementById('calc-cliente').value||'-',base,total,fecha:new Date().toLocaleDateString('es-AR')});
+  renderPresupuestos(); updateDashboard(); alert('✅ Presupuesto guardado.');
+}
+
+function renderPresupuestos(){
+  const tbody=document.getElementById('pres-body');
+  if(!state.presupuestos.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px;">Sin presupuestos</td></tr>';return;}
+  tbody.innerHTML=state.presupuestos.map(p=>`<tr><td>${p.desc}</td><td>${p.cliente}</td><td>$${p.base.toFixed(2)}</td><td style="font-weight:700;color:var(--success);">$${p.total.toFixed(2)}</td><td>${p.fecha}</td></tr>`).join('');
+}
+
+// ===========================
+// AGENDA
+// ===========================
+function renderCalendar(){
+  const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-month-label').textContent=months[state.calMonth]+' '+state.calYear;
+  const grid=document.getElementById('cal-grid'); grid.innerHTML='';
+  const today=new Date();
+  const first=new Date(state.calYear,state.calMonth,1).getDay();
+  const days=new Date(state.calYear,state.calMonth+1,0).getDate();
+  const prevDays=new Date(state.calYear,state.calMonth,0).getDate();
+  for(let i=0;i<first;i++){
+    const d=document.createElement('div'); d.className='cal-day other-month';
+    d.innerHTML=`<div class="day-num">${prevDays-first+i+1}</div>`; grid.appendChild(d);
+  }
+  for(let d=1;d<=days;d++){
+    const isToday=d===today.getDate()&&state.calMonth===today.getMonth()&&state.calYear===today.getFullYear();
+    const dateStr=`${state.calYear}-${String(state.calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evs=state.eventos.filter(e=>e.fecha===dateStr);
+    const el=document.createElement('div');
+    el.className='cal-day'+(isToday?' today':'');
+    el.onclick=()=>openEventOnDay(dateStr);
+    el.innerHTML=`<div class="day-num">${d}</div>`+evs.map(e=>`<div class="cal-event ${e.gcal?'gcal':e.tipo==='meeting'?'meeting':e.tipo==='task'?'task':'local'}">${e.titulo}</div>`).join('');
+    grid.appendChild(el);
+  }
+  renderEventList();
+}
+
+function renderEventList(){
+  const list=document.getElementById('event-list');
+  const evs=state.eventos.filter(e=>{
+    const d=new Date(e.fecha+'T00:00:00');
+    return d.getMonth()===state.calMonth&&d.getFullYear()===state.calYear;
+  }).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  if(!evs.length){list.innerHTML='<p style="color:var(--text2);">Sin eventos este mes.</p>';return;}
+  list.innerHTML=evs.map(e=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-weight:600;">${e.gcal?'📆 ':e.tipo==='meeting'?'👥 ':'📌 '}${e.titulo}</div>
+        <div style="color:var(--text2);font-size:10px;">${e.fecha}${e.hora?' · '+e.hora:''}</div>
+        ${e.proyecto?`<div style="color:var(--accent4);font-size:10px;">📎 ${e.proyecto}</div>`:''}
+      </div>
+      ${!e.gcal?`<div style="display:flex;gap:4px;">
+        <button class="btn btn-outline btn-sm" onclick="editEvento(${e.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="delEvento(${e.id})">🗑️</button>
+      </div>`:'<span style="font-size:9px;color:var(--text2);">GCal</span>'}
+    </div>`).join('');
+}
+
+function openEventOnDay(date){ document.getElementById('evt-fecha').value=date; openModal('modal-evento'); }
+function prevMonth(){ state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} renderCalendar(); }
+function nextMonth(){ state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} renderCalendar(); }
+function goToday(){ state.calMonth=new Date().getMonth(); state.calYear=new Date().getFullYear(); renderCalendar(); }
+
+async function saveEvento(){
+  const titulo=document.getElementById('evt-titulo').value.trim();
+  const fecha=document.getElementById('evt-fecha').value;
+  if(!titulo||!fecha){alert('Completá título y fecha.');return;}
+  const id=parseInt(document.getElementById('evt-id').value)||Date.now();
+  const idx=state.eventos.findIndex(e=>e.id===id);
+  const ev={id,titulo,fecha,hora:document.getElementById('evt-hora').value,
+    dur:document.getElementById('evt-dur').value||'60',
+    tipo:document.getElementById('evt-tipo').value,
+    proyecto:document.getElementById('evt-proyecto').value,
+    desc:document.getElementById('evt-desc').value, gcal:false};
+  if(idx>-1) state.eventos[idx]=ev; else state.eventos.push(ev);
+  // Sync to Google Calendar if connected and checkbox checked
+  if(state.gcal.connected && document.getElementById('evt-gcal-sync').checked){
+    const gcalId=await createGcalEvent(ev);
+    if(gcalId){
+      const evIdx=state.eventos.findIndex(e=>e.id===id);
+      if(evIdx>-1) state.eventos[evIdx].gcal_id=gcalId;
+    }
+  }
+  updateProjSelector(); closeModal('modal-evento'); renderCalendar(); updateDashboard();
+}
+
+function editEvento(id){
+  const e=state.eventos.find(ev=>ev.id===id); if(!e)return;
+  document.getElementById('evt-id').value=e.id;
+  document.getElementById('evt-titulo').value=e.titulo;
+  document.getElementById('evt-fecha').value=e.fecha;
+  document.getElementById('evt-hora').value=e.hora||'';
+  document.getElementById('evt-dur').value=e.dur||'60';
+  document.getElementById('evt-tipo').value=e.tipo||'evento';
+  document.getElementById('evt-proyecto').value=e.proyecto||'';
+  document.getElementById('evt-desc').value=e.desc||'';
+  document.getElementById('modal-evento-title').textContent='Editar Evento';
+  openModal('modal-evento');
+}
+
+async function delEvento(id){
+  const ev=state.eventos.find(e=>e.id===id);
+  if(ev&&ev.gcal_id&&state.gcal.connected) await deleteGcalEvent(ev.gcal_id);
+  state.eventos=state.eventos.filter(e=>e.id!==id);
+  renderCalendar(); updateDashboard();
+}
+
+// ===========================
+// PROYECTOS
+// ===========================
+function saveProyecto(){
+  const nombre=document.getElementById('proj-nombre').value.trim();
+  if(!nombre){alert('Ingresá el nombre del proyecto.');return;}
+  const id=parseInt(document.getElementById('proj-id-edit').value)||Date.now();
+  const idx=state.proyectos.findIndex(p=>p.id===id);
+  const ias=document.getElementById('proj-ias').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const proj={id,nombre,responsable:document.getElementById('proj-responsable').value,
+    fecha:document.getElementById('proj-fecha').value,estado:document.getElementById('proj-estado').value,
+    desc:document.getElementById('proj-desc').value,link:document.getElementById('proj-link').value,ias,
+    avance:parseInt(document.getElementById('proj-avance').value)};
+  if(idx>-1) state.proyectos[idx]=proj; else state.proyectos.unshift(proj);
+  updateProjSelector(); closeModal('modal-proyecto'); renderProjects(); updateDashboard();
+}
+
+function updateProjSelector(){
+  const sel=document.getElementById('evt-proyecto');
+  sel.innerHTML='<option value="">Sin vincular</option>'+state.proyectos.map(p=>`<option value="${p.nombre}">${p.nombre}</option>`).join('');
+}
+
+function renderProjects(filter='todos'){
+  const list=document.getElementById('proj-list');
+  let projs=filter==='todos'?state.proyectos:state.proyectos.filter(p=>p.estado===filter);
+  if(!projs.length){list.innerHTML='<div class="card" style="text-align:center;color:var(--text2);padding:40px;">No hay proyectos. Creá el primero.</div>';return;}
+  const colors={'En curso':'badge-blue','Completado':'badge-green','Pausa':'badge-orange','Planificación':'badge-purple'};
+  list.innerHTML=projs.map(p=>`
+    <div class="project-card">
+      <div class="project-header">
+        <div><div class="project-title">${p.nombre}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">👤 ${p.responsable} · 📅 ${p.fecha||'Sin fecha'}</div></div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span class="badge ${colors[p.estado]||'badge-blue'}">${p.estado}</span>
+          <button class="btn btn-outline btn-sm" onclick="editProj(${p.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="delProj(${p.id})">🗑️</button>
+        </div>
+      </div>
+      ${p.desc?`<p style="font-size:12px;color:var(--text2);margin-bottom:8px;">${p.desc}</p>`:''}
+      <div class="progress-bar"><div class="progress-fill" style="width:${p.avance}%"></div></div>
+      <div style="font-size:11px;color:var(--text2);">Avance: <strong>${p.avance}%</strong></div>
+      <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+        ${p.link?`<a href="${p.link}" target="_blank" style="color:var(--accent);font-size:11px;">🔗 Ver proyecto</a>`:''}
+        ${p.ias&&p.ias.length?`<div class="ia-tags">${p.ias.map(ia=>`<span class="ia-tag">🤖 ${ia}</span>`).join('')}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function filterProj(f){ renderProjects(f); }
+
+function editProj(id){
+  const p=state.proyectos.find(pr=>pr.id===id); if(!p)return;
+  document.getElementById('proj-id-edit').value=p.id;
+  document.getElementById('proj-nombre').value=p.nombre;
+  document.getElementById('proj-responsable').value=p.responsable;
+  document.getElementById('proj-fecha').value=p.fecha||'';
+  document.getElementById('proj-estado').value=p.estado;
+  document.getElementById('proj-desc').value=p.desc||'';
+  document.getElementById('proj-link').value=p.link||'';
+  document.getElementById('proj-ias').value=(p.ias||[]).join(', ');
+  document.getElementById('proj-avance').value=p.avance||0;
+  document.getElementById('proj-avance-val').textContent=p.avance||0;
+  document.getElementById('modal-proj-title').textContent='Editar Proyecto';
+  openModal('modal-proyecto');
+}
+
+function delProj(id){
+  if(!confirm('¿Eliminar este proyecto?'))return;
+  state.proyectos=state.proyectos.filter(p=>p.id!==id);
+  updateProjSelector(); renderProjects(); updateDashboard();
+}
+
+// ===========================
+// DASHBOARD
+// ===========================
+let dashCharts={};
+function updateDashboard(){
+  const emitidas=state.comprobantes.filter(c=>c.tipo_dir==='EMITIDA');
+  const recibidas=state.comprobantes.filter(c=>c.tipo_dir==='RECIBIDA');
+  const totalEmit=emitidas.reduce((s,c)=>s+(c.total||0),0);
+  const totalRecv=recibidas.reduce((s,c)=>s+(c.total||0),0);
+  document.getElementById('kpi-comp').textContent=state.comprobantes.length;
+  document.getElementById('kpi-emit').textContent='$'+totalEmit.toFixed(0);
+  document.getElementById('kpi-recv').textContent='$'+totalRecv.toFixed(0);
+  document.getElementById('kpi-pres').textContent=state.presupuestos.length;
+  document.getElementById('kpi-proj').textContent=state.proyectos.filter(p=>p.estado==='En curso').length;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('kpi-ev').textContent=state.eventos.filter(e=>e.fecha===today).length;
+
+  const ctx1=document.getElementById('chart1');
+  if(dashCharts.c1)dashCharts.c1.destroy();
+  dashCharts.c1=new Chart(ctx1,{type:'bar',data:{labels:['Emitidas','Recibidas'],datasets:[{data:[emitidas.length,recibidas.length],backgroundColor:['#3fb950','#f85149'],borderRadius:6,borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b949e'},grid:{display:false}},y:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}}}}});
+
+  const ctx2=document.getElementById('chart2');
+  if(dashCharts.c2)dashCharts.c2.destroy();
+  const lastP=state.presupuestos[0];
+  if(lastP){dashCharts.c2=new Chart(ctx2,{type:'doughnut',data:{labels:['Neto','Impuestos'],datasets:[{data:[lastP.base,lastP.total-lastP.base],backgroundColor:['#58a6ff','#f78166'],borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#8b949e',font:{size:10}},position:'bottom'}},cutout:'60%'}});}
+  else{dashCharts.c2=new Chart(ctx2,{type:'doughnut',data:{labels:['Sin datos'],datasets:[{data:[1],backgroundColor:['#21262d'],borderWidth:0}]},options:{plugins:{legend:{display:false}}}});}
+
+  const ctx3=document.getElementById('chart3');
+  if(dashCharts.c3)dashCharts.c3.destroy();
+  if(state.proyectos.length){dashCharts.c3=new Chart(ctx3,{type:'bar',data:{labels:state.proyectos.slice(0,6).map(p=>p.nombre.length>12?p.nombre.substr(0,12)+'...':p.nombre),datasets:[{data:state.proyectos.slice(0,6).map(p=>p.avance),backgroundColor:'#d2a8ff',borderRadius:6,borderWidth:0}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{max:100,ticks:{color:'#8b949e',callback:v=>v+'%'},grid:{color:'#30363d'}},y:{ticks:{color:'#8b949e'},grid:{display:false}}}}});}
+  else{dashCharts.c3=new Chart(ctx3,{type:'bar',data:{labels:['Sin proyectos'],datasets:[{data:[0],backgroundColor:'#21262d',borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b949e'}},y:{ticks:{color:'#8b949e'}}}}});}
+
+  const evDiv=document.getElementById('dash-eventos');
+  const upcoming=state.eventos.filter(e=>e.fecha>=today).sort((a,b)=>a.fecha.localeCompare(b.fecha)).slice(0,5);
+  evDiv.innerHTML=upcoming.length?upcoming.map(e=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;"><strong>${e.gcal?'📆 ':'📌 '}${e.titulo}</strong><br/><span style="color:var(--text2);">${e.fecha}${e.hora?' · '+e.hora:''}</span></div>`).join(''):'<p style="color:var(--text2);font-size:12px;">Sin eventos próximos.</p>';
+
+  const tb=document.getElementById('dash-comp-body');
+  const last5=state.comprobantes.slice(0,5);
+  tb.innerHTML=last5.length?last5.map(c=>`<tr><td><span class="badge ${c.tipo_dir==='EMITIDA'?'badge-green':'badge-red'}">${c.tipo_dir}</span></td><td>${c.tipo_comprobante||'-'}</td><td style="font-size:10px;">${c.cuit_emisor||'-'}</td><td>${c.fecha_emision||'-'}</td><td style="font-weight:700;">$${(c.total||0).toFixed(2)}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px;">Sin comprobantes</td></tr>';
+
+  const dl=document.getElementById('dash-proj-list');
+  dl.innerHTML=state.proyectos.length?state.proyectos.slice(0,4).map(p=>`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="font-weight:600;">${p.nombre}</span><span style="color:var(--text2);">${p.avance}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${p.avance}%"></div></div><div style="font-size:10px;color:var(--text2);">${p.responsable} · ${p.estado}</div></div>`).join(''):'<p style="font-size:12px;color:var(--text2);">Sin proyectos cargados.</p>';
+}
+
+// ===========================
+// MODALS
+// ===========================
+function openModal(id){
+  if(id==='modal-evento'){document.getElementById('evt-id').value='';document.getElementById('modal-evento-title').textContent='Nuevo Evento';updateProjSelector();}
+  if(id==='modal-proyecto'&&!document.getElementById('proj-id-edit').value){['proj-nombre','proj-fecha','proj-desc','proj-link','proj-ias'].forEach(f=>document.getElementById(f).value='');document.getElementById('proj-avance').value=0;document.getElementById('proj-avance-val').textContent=0;document.getElementById('modal-proj-title').textContent='Nuevo Proyecto';}
+  if(id==='modal-presupuesto') renderPresupuestos();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('open'); document.getElementById('proj-id-edit').value=''; }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// ===========================
+// INIT
+// ===========================
+updateDashboard(); calcAll(); renderCalendar(); renderProjects();
+</script>
+</body>
+</html>
